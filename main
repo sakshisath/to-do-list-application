@@ -1,0 +1,67 @@
+def add_task(tasks, task_number, description):
+    task_number += 1
+    tasks.append({"task_number": task_number, "description": description})
+    print("Task added successfully!")
+    return tasks, task_number
+
+def view_tasks(tasks):
+    if not tasks:
+        print("No tasks available:)")
+    else:
+        print("Tasks: ")
+        for task in tasks:
+            print(task)
+
+def edit_task(tasks, task_number, new_description):
+    if task_number >= 1 and task_number <= len(tasks):
+        tasks[task_number - 1]["description"] = new_description
+        print("Task updated!")
+    else:
+        print("Task not found:(")
+    return tasks
+
+def delete_task(tasks, task_number):
+    if task_number >= 1 and task_number <= len(tasks):
+        del tasks[task_number - 1]
+        print("Task deleted!")
+    else:
+        print("Task not found")
+    return tasks
+
+def main():
+    tasks = []
+    task_number = 0
+        
+    print("Welcome to Your To-Do List!\n1. Add tasks\n2. View Tasks\n3. Edit tasks\n4. Delete task\n5. Exit To-Do List")
+        
+    while True:
+        choice = input("What would you like to do?: ")
+
+        if choice == '1':
+            description = input("Enter task: ")
+            tasks, task_number = add_task(tasks, task_number, description)
+
+        elif choice == '2':
+            view_tasks(tasks)
+
+        elif choice == '3':
+            task_number = int(input("Enter task number to edit: "))
+            new_description = input("Enter edited task: ")
+            tasks = edit_task(tasks, task_number, new_description)
+
+        elif choice == '4':
+            task_number = int(input("Enter task number to delete: "))
+            tasks = delete_task(tasks, task_number)
+
+        elif choice == '5':
+            print("Exiting To-Do List")
+            break
+
+        else:
+            print("Invalid choice:( Please try again!")
+
+if __name__ == "__main__":
+    main()
+
+
+
