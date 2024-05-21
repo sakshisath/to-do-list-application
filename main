@@ -1,215 +1,192 @@
 class Node:
-   def __init__(self, data):
-       self.data = data
-       self.next = None
+    def __init__(self, data):
+        self.data = data
+        self.next = None
 
 
 class LinkedList:
-   def __init__(self):
-       self.head = None
+    def __init__(self):
+        self.head = None
 
+    def add_task(self, description):
+        if not self.head:
+            self.head = Node({"description": description})
+        else:
+            current = self.head
+            while current.next:
+                current = current.next
+            current.next = Node({"description": description})
 
-   def add_task(self, description):
-       if not self.head:
-           self.head = Node({"description": description})
-       else:
-           current = self.head
-           while current.next:
-               current = current.next
-           current.next = Node({"description": description})
+    def view_tasks(self):
+        if not self.head:
+            print("No tasks available:)")
+        else:
+            current = self.head
+            task_number = 1
+            while current:
+                print(f"{task_number}. {current.data['description']}")
+                current = current.next
+                task_number += 1
 
+    def edit_task(self, task_number, new_description):
+        current = self.head
+        old_description = None
+        for _ in range(task_number - 1):
+            if not current:
+                print("Task not found:(")
+                return
+            current = current.next
+        if current:
+            old_description = current.data["description"]
+            current.data["description"] = new_description
+            print("Task updated!")
+        return old_description
 
-   def view_tasks(self):
-       if not self.head:
-           print("No tasks available:)")
-       else:
-           current = self.head
-           task_number = 1
-           while current:
-               print(f"{task_number}. {current.data['description']}")
-               current = current.next
-               task_number += 1
+    def delete_task(self, index):
+        description = None
+        if index == 0:
+            description = self.head.data["description"]
+            self.head = self.head.next
+            print("Task deleted!")
+        else:
+            current = self.head
+            prev = None
+            count = 0
+            while current and count != index:
+                prev = current
+                current = current.next
+                count += 1
+            if current:
+                description = current.data["description"]
+                prev.next = current.next
+                print("Task deleted!")
+        return description
 
-
-   def edit_task(self, task_number, new_description):
-       current = self.head
-       old_description = None
-       for _ in range(task_number - 1):
-           if not current:
-               print("Task not found:(")
-               return
-           current = current.next
-       if current:
-           old_description = current.data["description"]
-           current.data["description"] = new_description
-           print("Task updated!")
-       return old_description
-
-
-   def delete_task(self, index):
-       description = None
-       if index == 0:
-           description = self.head.data["description"]
-           self.head = self.head.next
-           print("Task deleted!")
-       else:
-           current = self.head
-           prev = None
-           count = 0
-           while current and count != index:
-               prev = current
-               current = current.next
-               count += 1
-           if current:
-               description = current.data["description"]
-               prev.next = current.next
-               print("Task deleted!")
-       return description
-
-
-   def length(self):
-       current = self.head
-       count = 0
-       while current:
-           count += 1
-           current = current.next
-       return count
+    def length(self):
+        current = self.head
+        count = 0
+        while current:
+            count += 1
+            current = current.next
+        return count
 
 
 class Stack:
-   def __init__(self):
-       self.items = []
+    def __init__(self):
+        self.items = []
 
+    def push(self, item):
+        self.items.append(item)
 
-   def push(self, item):
-       self.items.append(item)
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
 
-
-   def pop(self):
-       if not self.is_empty():
-           return self.items.pop()
-
-
-   def is_empty(self):
-       return len(self.items) == 0
+    def is_empty(self):
+        return len(self.items) == 0
 
 
 class HashTable:
-   def __init__(self):
-       self.hash_table = {}
+    def __init__(self):
+        self.hash_table = {}
 
+    def add_task(self, description, keywords):
+        for keyword in keywords:
+            if keyword in self.hash_table:
+                self.hash_table[keyword].append(description)
+            else:
+                self.hash_table[keyword] = [description]
 
-   def add_task(self, description, keywords):
-       for keyword in keywords:
-           if keyword in self.hash_table:
-               self.hash_table[keyword].append(description)
-           else:
-               self.hash_table[keyword] = [description]
-
-
-   def search_tasks(self, keyword):
-       if keyword in self.hash_table:
-           print("Tasks related to keyword '{}':".format(keyword))
-           for task in self.hash_table[keyword]:
-               print(task)
-       else:
-           print("No tasks found related to keyword '{}'".format(keyword))
+    def search_tasks(self, keyword):
+        if keyword in self.hash_table:
+            print("Tasks related to keyword '{}':".format(keyword))
+            for task in self.hash_table[keyword]:
+                print(task)
+        else:
+            print("No tasks found related to keyword '{}'".format(keyword))
 
 
 def main():
-   tasks = LinkedList()
-   undo_stack = Stack()
-   hash_table = HashTable()
+    tasks = LinkedList()
+    undo_stack = Stack()
+    hash_table = HashTable()
 
+    options = "\n1. Add tasks\n2. View Tasks\n3. Edit tasks\n4. Delete task\n5. Search Tasks\n6. Undo\n7. Exit To-Do List\n"
 
-   options = "\n1. Add tasks\n2. View Tasks\n3. Edit tasks\n4. Delete task\n5. Search Tasks\n6. Undo\n7. Exit To-Do List\n"
+    print("Welcome to Your To-Do List!" + options)
 
+    while True:
+        choice = input("What would you like to do to your list?: ")
 
-   print("Welcome to Your To-Do List!" + options)
+        if choice == '1':
+            description = input("Enter task: ")
+            tasks.add_task(description)
+            keywords = input("Enter keywords/tags (comma-separated): ").split(',')
+            hash_table.add_task(description, keywords)
+            print("Task added successfully!")
+            undo_stack.push(("add", description, keywords))
+            tasks.view_tasks()
 
+        elif choice == '2':
+            print("Here are your current tasks! Good luck!")
+            tasks.view_tasks()
 
-   while True:
-       choice = input("What would you like to do to your list?: ")
+        elif choice == '3':
+            task_number = int(input("Enter task number to edit: "))
+            new_description = input("Enter edited task: ")
+            old_description = tasks.edit_task(task_number, new_description)
+            undo_stack.push(("edit", task_number, old_description, new_description))
+            tasks.view_tasks()
 
+        elif choice == '4':
+            task_number = int(input("Enter task number to delete: "))
+            description = tasks.delete_task(task_number - 1)  # Adjusting task number for zero-based indexing
+            undo_stack.push(("delete", task_number, description))
+            tasks.view_tasks()
 
-       if choice == '1':
-           description = input("Enter task: ")
-           tasks.add_task(description)
-           keywords = input("Enter keywords/tags (comma-separated): ").split(',')
-           hash_table.add_task(description, keywords)
-           print("Task added successfully!")
-           undo_stack.push(("add", description, keywords))
-           tasks.view_tasks()
+        elif choice == '5':
+            keyword = input("Enter keyword to search tasks: ")
+            hash_table.search_tasks(keyword)
 
+        elif choice == '6':
+            if not undo_stack.is_empty():
+                action = undo_stack.pop()
+                if action[0] == "add":
+                    tasks.delete_task(tasks.length() - 1)  # Revert add action
+                    if len(action) > 2:  # Ensure action has enough elements
+                        for keyword in action[2]:
+                            if keyword in hash_table.hash_table:
+                                hash_table.hash_table[keyword].remove(action[1])  # Remove from hash table
+                elif action[0] == "edit":
+                    tasks.edit_task(action[1], action[2])  # Revert edit action
+                    if len(action) > 3:  # Ensure action has enough elements
+                        for keyword in action[3]:
+                            if keyword in hash_table.hash_table:
+                                hash_table.hash_table[keyword].remove(action[3])  # Remove edited description
+                                hash_table.hash_table[keyword].append(action[2])  # Add back old description
+                            else:
+                                hash_table.hash_table[keyword] = [action[2]]  # Add back old description
+                elif action[0] == "delete":
+                    tasks.add_task(action[2])  # Revert delete action
+                    if len(action) > 3:  # Ensure action has enough elements
+                        for keyword in action[3]:
+                            if keyword in hash_table.hash_table:
+                                hash_table.hash_table[keyword].append(action[2])  # Add back to hash table
+                            else:
+                                hash_table.hash_table[keyword] = [action[2]]  # Add back to hash table
+                print("Undo successful!")
+                tasks.view_tasks()
+            else:
+                print("Nothing to undo!")
 
-       elif choice == '2':
-           print("Here are your current tasks! Good luck!")
-           tasks.view_tasks()
+        elif choice == '7':
+            print("Exiting To-Do List")
+            break
 
+        else:
+            print("Invalid choice:( Please try again!")
 
-       elif choice == '3':
-           task_number = int(input("Enter task number to edit: "))
-           new_description = input("Enter edited task: ")
-           old_description = tasks.edit_task(task_number, new_description)
-           undo_stack.push(("edit", task_number, old_description, new_description))
-           tasks.view_tasks()
-
-
-       elif choice == '4':
-           task_number = int(input("Enter task number to delete: "))
-           description = tasks.delete_task(task_number - 1)  # Adjusting task number for zero-based indexing
-           undo_stack.push(("delete", task_number, description))
-           tasks.view_tasks()
-
-
-       elif choice == '5':
-           keyword = input("Enter keyword to search tasks: ")
-           hash_table.search_tasks(keyword)
-
-
-       elif choice == '6':
-           if not undo_stack.is_empty():
-               action = undo_stack.pop()
-               if action[0] == "add":
-                   tasks.delete_task(tasks.length() - 1)  # Revert add action
-                   if len(action) > 2:  # Ensure action has enough elements
-                       for keyword in action[2]:
-                           if keyword in hash_table.hash_table:
-                               hash_table.hash_table[keyword].remove(action[1])  # Remove from hash table
-               elif action[0] == "edit":
-                   tasks.edit_task(action[1], action[2])  # Revert edit action
-                   if len(action) > 3:  # Ensure action has enough elements
-                       for keyword in action[3]:
-                           if keyword in hash_table.hash_table:
-                               hash_table.hash_table[keyword].remove(action[2])  # Remove old description
-                               hash_table.hash_table[keyword].append(action[1])  # Add new description
-                           else:
-                               hash_table.hash_table[keyword] = [action[1]]  # Add new description
-               elif action[0] == "delete":
-                   tasks.add_task(action[2])  # Revert delete action
-                   if len(action) > 3:  # Ensure action has enough elements
-                       for keyword in action[3]:
-                           if keyword in hash_table.hash_table:
-                               hash_table.hash_table[keyword].append(action[2])  # Add back to hash table
-                           else:
-                               hash_table.hash_table[keyword] = [action[2]]  # Add back to hash table
-               print("Undo successful!")
-               tasks.view_tasks()
-           else:
-               print("Nothing to undo!")
-
-
-       elif choice == '7':
-           print("Exiting To-Do List")
-           break
-
-
-       else:
-           print("Invalid choice:( Please try again!")
-
-
-       print(options)
-
+        print(options)
 
 if __name__ == "__main__":
-   main()
+    main()
