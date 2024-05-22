@@ -1,8 +1,9 @@
+import json
+
 class Node:
     def __init__(self, data):
         self.data = data
         self.next = None
-
 
 class LinkedList:
     def __init__(self):
@@ -88,6 +89,18 @@ class LinkedList:
             current = current.next
         return count
 
+    def to_list(self):
+        tasks = []
+        current = self.head
+        while current:
+            tasks.append(current.data)
+            current = current.next
+        return tasks
+
+    def from_list(self, tasks):
+        self.head = None
+        for task in tasks:
+            self.add_task(task["description"])
 
 class Stack:
     def __init__(self):
@@ -103,7 +116,6 @@ class Stack:
     def is_empty(self):
         return len(self.items) == 0
 
-
 class HashTable:
     def __init__(self):
         self.hash_table = {}
@@ -117,19 +129,32 @@ class HashTable:
 
     def search_tasks(self, keyword):
         if keyword in self.hash_table:
-            print("Tasks related to keyword '{}':".format(keyword))
+            print(f"Tasks related to keyword '{keyword}':")
             for task in self.hash_table[keyword]:
                 print(task)
         else:
-            print("No tasks found related to keyword '{}'".format(keyword))
+            print(f"No tasks found related to keyword '{keyword}'")
 
+def save_tasks_to_file(tasks, filename):
+    with open(filename, 'w') as file:
+        json.dump(tasks.to_list(), file)
+    print(f"Tasks saved to {filename}")
+
+def load_tasks_from_file(filename):
+    with open(filename, 'r') as file:
+        tasks_data = json.load(file)
+    tasks = LinkedList()
+    tasks.from_list(tasks_data)
+    print(f"Tasks loaded from {filename}")
+    return tasks
 
 def main():
     tasks = LinkedList()
     undo_stack = Stack()
     hash_table = HashTable()
+    filename = "tasks.json"
 
-    options = "\n1. Add tasks\n2. View Tasks\n3. Edit tasks\n4. Delete task\n5. Search Tasks\n6. Undo\n7. Exit To-Do List\n"
+    options = "\n1. Add tasks\n2. View Tasks\n3. Edit tasks\n4. Delete task\n5. Search Tasks\n6. Undo\n7. Save Tasks\n8. Load Tasks\n9. Exit To-Do List\n"
 
     print("Welcome to Your To-Do List!" + options)
 
@@ -199,6 +224,12 @@ def main():
                 print("Nothing to undo!")
 
         elif choice == '7':
+            save_tasks_to_file(tasks, filename)
+
+        elif choice == '8':
+            tasks = load_tasks_from_file(filename)
+
+        elif choice == '9':
             print("Exiting To-Do List")
             break
 
@@ -206,7 +237,6 @@ def main():
             print("Invalid choice:( Please try again!")
 
         print(options)
-
 
 if __name__ == "__main__":
     main()
