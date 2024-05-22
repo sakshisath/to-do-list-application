@@ -45,9 +45,10 @@ class LinkedList:
     def delete_task(self, index):
         description = None
         if index == 0:
-            description = self.head.data["description"]
-            self.head = self.head.next
-            print("Task deleted!")
+            if self.head:
+                description = self.head.data["description"]
+                self.head = self.head.next
+                print("Task deleted!")
         else:
             current = self.head
             prev = None
@@ -61,6 +62,23 @@ class LinkedList:
                 prev.next = current.next
                 print("Task deleted!")
         return description
+
+    def insert_task_at(self, index, description):
+        new_node = Node({"description": description})
+        if index == 0:
+            new_node.next = self.head
+            self.head = new_node
+        else:
+            current = self.head
+            prev = None
+            count = 0
+            while current and count != index:
+                prev = current
+                current = current.next
+                count += 1
+            if prev:
+                prev.next = new_node
+                new_node.next = current
 
     def length(self):
         current = self.head
@@ -141,7 +159,8 @@ def main():
         elif choice == '4':
             task_number = int(input("Enter task number to delete: "))
             description = tasks.delete_task(task_number - 1)  # Adjusting task number for zero-based indexing
-            undo_stack.push(("delete", task_number, description))
+            keywords = input("Enter keywords/tags (comma-separated): ").split(',')
+            undo_stack.push(("delete", task_number - 1, description, keywords))
             tasks.view_tasks()
 
         elif choice == '5':
@@ -153,27 +172,27 @@ def main():
                 action = undo_stack.pop()
                 if action[0] == "add":
                     tasks.delete_task(tasks.length() - 1)  # Revert add action
-                    if len(action) > 2:  # Ensure action has enough elements
-                        for keyword in action[2]:
-                            if keyword in hash_table.hash_table:
-                                hash_table.hash_table[keyword].remove(action[1])  # Remove from hash table
+                    for keyword in action[2]:  # Ensure keywords are removed from hash table
+                        if keyword in hash_table.hash_table and action[1] in hash_table.hash_table[keyword]:
+                            hash_table.hash_table[keyword].remove(action[1])
                 elif action[0] == "edit":
                     tasks.edit_task(action[1], action[2])  # Revert edit action
-                    if len(action) > 3:  # Ensure action has enough elements
-                        for keyword in action[3]:
-                            if keyword in hash_table.hash_table:
-                                hash_table.hash_table[keyword].remove(action[3])  # Remove edited description
-                                hash_table.hash_table[keyword].append(action[2])  # Add back old description
-                            else:
-                                hash_table.hash_table[keyword] = [action[2]]  # Add back old description
+                    new_keywords = action[3].split(',')
+                    old_keywords = action[2].split(',')
+                    for keyword in new_keywords:  # Remove new description from hash table
+                        if keyword in hash_table.hash_table and action[3] in hash_table.hash_table[keyword]:
+                            hash_table.hash_table[keyword].remove(action[3])
+                    for keyword in old_keywords:  # Add old description back to hash table
+                        if keyword in hash_table.hash_table:
+                            hash_table.hash_table[keyword].append(action[2])
+                        else:
+                            hash_table.hash_table[keyword] = [action[2]]
                 elif action[0] == "delete":
-                    tasks.add_task(action[2])  # Revert delete action
-                    if len(action) > 3:  # Ensure action has enough elements
-                        for keyword in action[3]:
-                            if keyword in hash_table.hash_table:
-                                hash_table.hash_table[keyword].append(action[2])  # Add back to hash table
-                            else:
-                                hash_table.hash_table[keyword] = [action[2]]  # Add back to hash table
+                    task_number = action[1]
+                    description = action[2]
+                    tasks.insert_task_at(task_number, description)  # Revert delete action
+                    keywords = action[3]
+                    hash_table.add_task(description, keywords)  # Add back to hash table
                 print("Undo successful!")
                 tasks.view_tasks()
             else:
@@ -187,6 +206,7 @@ def main():
             print("Invalid choice:( Please try again!")
 
         print(options)
+
 
 if __name__ == "__main__":
     main()
